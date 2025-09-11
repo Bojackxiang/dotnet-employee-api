@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using EmployeeManagementApi.Services;
 using EmployeeManagementApi.Models;
+using EmployeeManagementApi.Extensions;
 
 namespace EmployeeManagementApi.Controllers
 {
@@ -21,19 +22,23 @@ namespace EmployeeManagementApi.Controllers
     [HttpGet]
     public IActionResult GetAll()
     {
-      return Ok(_employeeService.GetAll());
+      var employees = _employeeService.GetAll();
+      return this.ApiSuccess(employees, "成功获取所有员工信息");
     }
 
     // route
     // - [POST]
-    // - /api/employee/new
+    // - /api/employee
     [HttpPost]
     public IActionResult Add([FromBody] EmployeeDto employee)
     {
-      if (!ModelState.IsValid) { return BadRequest(ModelState); }
-      var updated = _employeeService.Add(employee);
+      if (!ModelState.IsValid)
+      {
+        return this.ApiValidationError(ModelState, "员工信息验证失败");
+      }
 
-      return StatusCode(201, new { id = updated.Id });
+      var newEmployee = _employeeService.Add(employee);
+      return this.ApiSuccess(new { id = newEmployee.Id }, "员工创建成功");
     }
 
     // route
@@ -45,39 +50,47 @@ namespace EmployeeManagementApi.Controllers
       var employee = _employeeService.GetById(id);
       if (employee == null)
       {
-        return NotFound(new { message = "Employee is not found" });
+        return this.ApiError("员工不存在", 404);
       }
 
-      return StatusCode(200, employee);
+      return this.ApiSuccess(employee, "成功获取员工信息");
     }
 
     // route
-    // - [GET]
+    // - [DELETE]
     // - /api/employee/{id}
     [HttpDelete("{id}")]
     public IActionResult DeleteById(int id)
     {
-      _employeeService.Delete(id);
+      var isDeleted = _employeeService.Delete(id);
 
-      return Ok(new { success = true });
+      if (!isDeleted)
+      {
+        return this.ApiError("员工不存在或删除失败", 404);
+      }
+
+      return this.ApiSuccess("员工删除成功");
     }
 
     // route
-    // - [UPDATE]
+    // - [PUT]
     // - /api/employee/{id}
     [HttpPut("{id}")]
     public IActionResult UpdateById(int id, [FromBody] EmployeeDto employee)
     {
-      var existedEmployee = _employeeService.GetById(id);
-
-      if (existedEmployee == null)
+      if (!ModelState.IsValid)
       {
-        return NotFound(new { message = "Employee is not found" });
+        return this.ApiValidationError(ModelState, "员工信息验证失败");
       }
 
-      _employeeService.Update(id, employee);
+      var existedEmployee = _employeeService.GetById(id);
+      if (existedEmployee == null)
+      {
+        return this.ApiError("员工不存在", 404);
+      }
 
-      return Ok(new { success = true });
+      var updatedEmployee = _employeeService.Update(id, employee);
+      return this.ApiSuccess(updatedEmployee, "员工信息更新成功");
     }
   }
 }
