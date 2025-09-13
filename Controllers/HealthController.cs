@@ -8,12 +8,12 @@ namespace EmployeeManagementApi.Controllers
 {
   [ApiController]
   [Route("api/[controller]")]
-  public class HelloController : ControllerBase
+  public class HealthController : ControllerBase
   {
     [HttpGet]
     public IActionResult Get()
     {
-      return Ok("it should works");
+      return Ok("Healthy");
     }
   }
 }
