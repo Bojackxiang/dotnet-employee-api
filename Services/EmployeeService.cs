@@ -1,46 +1,125 @@
+using Microsoft.EntityFrameworkCore;
 using EmployeeManagementApi.Models;
+using EmployeeManagementApi.Data;
 
 namespace EmployeeManagementApi.Services
 {
   public class EmployeeService
   {
-    private readonly List<Employee> _employees = new();
-    private int _nextId = 1;
+    private readonly ApplicationDbContext _context;
 
-    public IEnumerable<Employee> GetAll() => _employees;
+    public EmployeeService(ApplicationDbContext context)
+    {
+      _context = context;
+    }
 
-    public Employee? GetById(int id) => _employees.FirstOrDefault(e => e.Id == id);
+    public async Task<IEnumerable<Employee>> GetAllAsync()
+    {
+      return await _context.Employees
+          .OrderBy(e => e.CreatedAt)
+          .ToListAsync();
+    }
+
+    public IEnumerable<Employee> GetAll()
+    {
+      return _context.Employees
+          .OrderBy(e => e.CreatedAt)
+          .ToList();
+    }
+
+    public async Task<Employee?> GetByIdAsync(int id)
+    {
+      return await _context.Employees
+          .FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public Employee? GetById(int id)
+    {
+      return _context.Employees
+          .FirstOrDefault(e => e.Id == id);
+    }
+
+    public async Task<Employee> AddAsync(EmployeeDto dto)
+    {
+      var employee = new Employee
+      {
+        Name = dto.Name,
+        Email = dto.Email,
+        Department = dto.Department,
+        HireDate = dto.HireDate,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+      };
+
+      _context.Employees.Add(employee);
+      await _context.SaveChangesAsync();
+      return employee;
+    }
 
     public Employee Add(EmployeeDto dto)
     {
       var employee = new Employee
       {
-        Id = _nextId++,
         Name = dto.Name,
         Email = dto.Email,
         Department = dto.Department,
-        HireDate = dto.HireDate
+        HireDate = dto.HireDate,
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
       };
-      _employees.Add(employee);
+
+      _context.Employees.Add(employee);
+      _context.SaveChanges();
       return employee;
+    }
+
+    public async Task<bool> UpdateAsync(int id, EmployeeDto dto)
+    {
+      var employee = await GetByIdAsync(id);
+      if (employee == null) return false;
+
+      employee.Name = dto.Name;
+      employee.Email = dto.Email;
+      employee.Department = dto.Department;
+      employee.HireDate = dto.HireDate;
+      employee.UpdatedAt = DateTime.UtcNow;
+
+      await _context.SaveChangesAsync();
+      return true;
     }
 
     public bool Update(int id, EmployeeDto dto)
     {
-      var emp = GetById(id);
-      if (emp == null) return false;
-      emp.Name = dto.Name;
-      emp.Email = dto.Email;
-      emp.Department = dto.Department;
-      emp.HireDate = dto.HireDate;
+      var employee = GetById(id);
+      if (employee == null) return false;
+
+      employee.Name = dto.Name;
+      employee.Email = dto.Email;
+      employee.Department = dto.Department;
+      employee.HireDate = dto.HireDate;
+      employee.UpdatedAt = DateTime.UtcNow;
+
+      _context.SaveChanges();
+      return true;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+      var employee = await GetByIdAsync(id);
+      if (employee == null) return false;
+
+      _context.Employees.Remove(employee);
+      await _context.SaveChangesAsync();
       return true;
     }
 
     public bool Delete(int id)
     {
-      var emp = GetById(id);
-      if (emp == null) return false;
-      _employees.Remove(emp);
+      var employee = GetById(id);
+      if (employee == null) return false;
+
+      _context.Employees.Remove(employee);
+      _context.SaveChanges();
       return true;
     }
   }

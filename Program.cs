@@ -1,9 +1,18 @@
+using Microsoft.EntityFrameworkCore;
+using EmployeeManagementApi.Data;
+using EmployeeManagementApi.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// 添加数据库上下文
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 注册服务
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<EmployeeManagementApi.Services.EmployeeService>();
+builder.Services.AddScoped<EmployeeService>(); // 改为 Scoped，因为要使用 DbContext
 
 var app = builder.Build();
 var env = builder.Environment.EnvironmentName;
