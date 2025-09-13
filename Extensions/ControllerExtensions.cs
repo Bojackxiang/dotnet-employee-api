@@ -22,16 +22,16 @@ namespace EmployeeManagementApi.Extensions
     /// </summary>
     public static IActionResult ApiSuccess(this ControllerBase controller, string message = "操作成功")
     {
-      var response = ApiResponse<object>.SuccessResult(message);
+      var response = ApiResponse<object?>.SuccessResult(message);
       return controller.Ok(response);
     }
 
     /// <summary>
     /// 返回错误响应
     /// </summary>
-    public static IActionResult ApiError(this ControllerBase controller, string message, int statusCode = 400, object errors = null)
+    public static IActionResult ApiError(this ControllerBase controller, string message, int statusCode = 400, object? errors = null)
     {
-      var response = ApiResponse<object>.ErrorResult(message, statusCode, errors);
+      var response = ApiResponse<object?>.ErrorResult(message, statusCode, errors);
 
       return statusCode switch
       {
@@ -49,7 +49,7 @@ namespace EmployeeManagementApi.Extensions
     /// </summary>
     public static IActionResult ApiValidationError(this ControllerBase controller, object errors, string message = "验证失败")
     {
-      var response = ApiResponse<object>.ErrorResult(message, 400, errors);
+      var response = ApiResponse<object?>.ErrorResult(message, 400, errors);
       return controller.BadRequest(response);
     }
   }

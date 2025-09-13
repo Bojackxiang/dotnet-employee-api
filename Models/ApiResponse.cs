@@ -9,11 +9,11 @@ namespace EmployeeManagementApi.Models
   public class ApiResponse<T>
   {
     public bool Success { get; set; }
-    public string Message { get; set; }
-    public T Data { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public T? Data { get; set; }
     public int StatusCode { get; set; }
     public DateTime Timestamp { get; set; }
-    public object Errors { get; set; }
+    public object? Errors { get; set; }
 
     public ApiResponse()
     {
@@ -33,7 +33,7 @@ namespace EmployeeManagementApi.Models
     }
 
     // 静态方法：失败响应
-    public static ApiResponse<T> ErrorResult(string message, int statusCode = 400, object errors = null)
+    public static ApiResponse<T> ErrorResult(string message, int statusCode = 400, object? errors = null)
     {
       return new ApiResponse<T>
       {
@@ -46,9 +46,9 @@ namespace EmployeeManagementApi.Models
     }
 
     // 静态方法：不带数据的成功响应
-    public static ApiResponse<object> SuccessResult(string message = "Success")
+    public static ApiResponse<object?> SuccessResult(string message = "Success")
     {
-      return new ApiResponse<object>
+      return new ApiResponse<object?>
       {
         Success = true,
         Message = message,
